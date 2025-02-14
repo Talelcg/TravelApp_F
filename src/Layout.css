@@ -1,0 +1,15 @@
+.main-content {
+    padding-top: 90px; /* מרווח מהתפריט העליון */
+    padding-left: 20px;
+    padding-right: 20px;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+  .app-container {
+    display: flex;
+    flex-direction:row;
+  }
+
+  
