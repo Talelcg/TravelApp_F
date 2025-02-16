@@ -20,6 +20,7 @@ const Trips = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [usernames, setUsernames] = useState<Record<string, string>>({});
+  const [imageIndex, setImageIndex] = useState<Record<string, number>>({}); // שמירת אינדקס תמונה לכל פוסט
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -54,6 +55,26 @@ const Trips = () => {
     }
   };
 
+  // שינוי אינדקס התמונה
+  const handleNextImage = (postId: string, imagesLength: number) => {
+    setImageIndex((prev) => ({
+      ...prev,
+      [postId]: (prev[postId] + 1) % imagesLength,
+    }));
+  };
+
+  const handlePrevImage = (postId: string, imagesLength: number) => {
+    setImageIndex((prev) => ({
+      ...prev,
+      [postId]: (prev[postId] - 1 + imagesLength) % imagesLength,
+    }));
+  };
+
+  // פונקציה לשמירת ה-ID של הפוסט ב-localStorage
+  const handleViewDetails = (postId: string) => {
+    localStorage.setItem("selectedPostId", postId); // שמירת ה-ID ב-localStorage
+  };
+
   return (
     <div className="trips-container">
       <h1 style={{ textAlign: "center" }}>Explore Trips</h1>
@@ -70,9 +91,21 @@ const Trips = () => {
                 fetchUsername(post.userId); // קריאה לפונקציה כאשר אין עדיין שם משתמש
               }
 
+              // הגדרת אינדקס ברירת מחדל אם לא קיים
+              if (!(post._id in imageIndex)) {
+                setImageIndex((prev) => ({ ...prev, [post._id]: 0 }));
+              }
+
               return (
-                <Card key={post._id} className="shadow-sm border-0 rounded-lg overflow-hidden mt-5 p-3">
-                  <div className="d-flex justify-content-end text-muted" style={{ fontSize: "0.9rem" }}>
+                <Card
+                  key={post._id}
+                  className="shadow-sm border-0 rounded-lg overflow-hidden mt-5 p-3"
+                  style={{ maxWidth: "600px", margin: "0 auto" }}
+                >
+                  <div
+                    className="d-flex justify-content-end text-muted"
+                    style={{ fontSize: "0.9rem" }}
+                  >
                     <span>
                       {new Date(post.createdAt).toLocaleString("en-US", {
                         hour: "2-digit",
@@ -82,23 +115,46 @@ const Trips = () => {
                         day: "numeric",
                       })}
                     </span>
-                    
                   </div>
-   {/* מיקום */}
-   <div className="text-center">
-                      <span className="d-flex justify-content-end text-muted" style={{ fontSize: "0.9rem" }}>Location: {post.location}</span>
-                      
-                    </div>
+                  {/* מיקום */}
+                  <div className="text-center">
+                    <span className="d-flex justify-content-end text-muted" style={{ fontSize: "0.9rem" }}>
+                      Location: {post.location}
+                    </span>
+                  </div>
+
                   <div className="position-relative w-100 text-center">
-                    {post.images.length > 0 ? (
-                      <img
-                        src={post.images[0]}
-                        alt="Post"
-                        className="img-fluid rounded w-100"
-                        style={{ height: "300px", objectFit: "cover" }}
-                      />
-                    ) : (
-                      <p></p>
+                    {post.images.length > 0 && (
+                      <div className="position-relative">
+                        <img
+                          src={post.images[imageIndex[post._id]]}
+                          alt="Post"
+                          className="img-fluid rounded"
+                          style={{
+                            width: "60%",
+                            height: "auto",
+                          }}
+                        />
+                        {post.images.length > 1 && (
+                          <>
+                            <button
+                              className="position-absolute top-50 start-0 translate-middle-y btn"
+                              onClick={() => handlePrevImage(post._id, post.images.length)}
+                              style={{ left: "5px", backgroundColor: "#FF9800", color: "white" }}
+                            >
+                              ⏴
+                            </button>
+
+                            <button
+                              className="position-absolute top-50 end-0 translate-middle-y btn "
+                              onClick={() => handleNextImage(post._id, post.images.length)}
+                              style={{ right: "5px", backgroundColor: "#FF9800", color: "white" }}
+                            >
+                              ⏵
+                            </button>
+                          </>
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -106,12 +162,9 @@ const Trips = () => {
                     <h5 className="text-center my-2">{post.title}</h5>
                     <p className="text-center">{post.content}</p>
 
-                    {/* שם המשתמש */}
                     <div className="text-left">
                       <span>👤 {usernames[post.userId] || "Loading..."}</span>
                     </div>
-
-                 
 
                     <div className="d-flex justify-content-between mt-3 text-muted" style={{ gap: "20px" }}>
                       <span>⭐ {post.rating} / 5</span>
@@ -120,7 +173,12 @@ const Trips = () => {
                     </div>
 
                     <div className="d-flex justify-content-center mt-3">
-                      <Link to={`/post/${post._id}`} className="btn btn-primary w-auto">
+                      <Link
+                        to="/post" // נתיב ללא ה-ID
+                        className="btn w-auto"
+                        style={{ backgroundColor: "#FF9800", color: "white" }}
+                        onClick={() => handleViewDetails(post._id)} // קריאה לפונקציה בעת לחיצה
+                      >
                         View Details
                       </Link>
                     </div>
