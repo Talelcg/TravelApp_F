@@ -213,9 +213,14 @@ const UploadPost: React.FC = () => {
               {rating > 0 && <span className="ms-3">{getRatingLabel()}</span>}
             </div>
           </div>
-          <button type="submit" className="btn btn-dis w-100">
-            Submit Post
-          </button>
+          <button 
+  type="submit" 
+  className="btn w-100" 
+  style={{ backgroundColor: "#FF9800", color: "white" }}
+>
+  Submit Post
+</button>
+
         </form>
 
         {uploadSuccess && (
