@@ -26,13 +26,26 @@ export const register = (data: { email: string; username: string; password: stri
   API.post('/users/register', data);
 
 export const refreshToken = () => API.post('/users/refresh');
+export const deletePost = (postId: string) => 
+  API.delete(`/posts/${postId}`);
 
 export const logout = () => API.post('/users/logout');
 export const getUsernameById = (userId: string) => API.get(`/users/${userId}`);
 //export const addPost = (data: { title: string; content: string; location: string; rating: number; images: string[] }) => API.post('/posts', data);
 export const getAllPosts = () => API.get('/posts');
+export const getPostById = (postId: string) => API.get(`/posts/${postId}`);
+
+export const updatePost = (postId: string, data: FormData) =>
+  
+  API.put(`/posts/${postId}`, data, {
+    headers: {
+     "Content-Type": "multipart/form-data",
+    },
+  });
 export const addPost = (data: FormData) => API.post('/posts', data, {
   headers: {
     "Content-Type": "multipart/form-data",
   },
 });
+
+

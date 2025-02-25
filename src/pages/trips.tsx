@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Card } from "react-bootstrap";
-import { getAllPosts, getUsernameById } from "../api"; // יבוא פונקציות ה-API
+import { Link, useNavigate } from "react-router-dom";
+import { Card, Dropdown } from "react-bootstrap";
+import { getAllPosts, getUsernameById, deletePost } from "../api"; // הוספתי את פונקציית ה-API למחיקת פוסט
+import { FaEllipsisV } from "react-icons/fa";
 
 interface Post {
   _id: string;
@@ -18,9 +19,11 @@ interface Post {
 
 const Trips = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [usernames, setUsernames] = useState<Record<string, string>>({});
   const [imageIndex, setImageIndex] = useState<Record<string, number>>({}); // שמירת אינדקס תמונה לכל פוסט
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null); // שמירת ה-ID של המשתמש הנוכחי
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -33,6 +36,10 @@ const Trips = () => {
         setLoading(false);
       }
     };
+
+    // קביעת המשתמש הנוכחי
+    const storedUserId = localStorage.getItem("user");
+    setCurrentUserId(storedUserId ? storedUserId.replace(/"/g, '') : null);
 
     fetchPosts();
   }, []);
@@ -75,6 +82,26 @@ const Trips = () => {
     localStorage.setItem("selectedPostId", postId); // שמירת ה-ID ב-localStorage
   };
 
+  // פונקציה לעריכה ומחיקה של הפוסט
+  const handleEdit = (postId: string) => {
+    // Save post ID to localStorage
+    localStorage.setItem("selectedPostId", postId);
+    navigate("/edit-post"); // Navigate to the upload post page for editing
+  };
+  
+
+  // פונקציה למחיקת הפוסט
+  const handleDelete = async (postId: string) => {
+    try {
+      // קריאה לפונקציית המחיקה
+      await deletePost(postId); // קריאה לפונקציה שמבצעת את המחיקה ב-API
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId)); // עדכון המצב (state) כדי להוריד את הפוסט מהתצוגה
+      console.log(`Post ${postId} deleted successfully`);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+
   return (
     <div className="trips-container">
       <h1 style={{ textAlign: "center" }}>Explore Trips</h1>
@@ -103,8 +130,8 @@ const Trips = () => {
                   style={{ maxWidth: "600px", margin: "0 auto" }}
                 >
                   <div
-                    className="d-flex justify-content-end text-muted"
-                    style={{ fontSize: "0.9rem" }}
+                    className="d-flex justify-content-between align-items-center text-muted"
+                    style={{ fontSize: "0.9rem", marginBottom: "10px" }}
                   >
                     <span>
                       {new Date(post.createdAt).toLocaleString("en-US", {
@@ -115,11 +142,27 @@ const Trips = () => {
                         day: "numeric",
                       })}
                     </span>
+                    {/* Show Dropdown only if the logged-in user is the post author */}
+                    {currentUserId === post.userId && (
+                      <Dropdown>
+                        <Dropdown.Toggle
+                          variant="secondary"
+                          size="sm"
+                          style={{ backgroundColor: "#FF9800", borderColor: "#FF9800" }}
+                        >
+                          <FaEllipsisV style={{ color: "white" }} /> {/* אייקון של שלוש נקודות */}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item onClick={() => handleEdit(post._id)}>Edit</Dropdown.Item>
+                          <Dropdown.Item onClick={() => handleDelete(post._id)}>Delete</Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    )}
                   </div>
-                  {/* מיקום */}
+
                   <div className="text-center">
-                    <span className="d-flex justify-content-end text-muted" style={{ fontSize: "0.9rem" }}>
-                      Location: {post.location}
+                    <span className="d-flex justify-content-left text-muted" style={{ fontSize: "0.9rem" }}>
+                      {post.location}
                     </span>
                   </div>
 
@@ -174,10 +217,10 @@ const Trips = () => {
 
                     <div className="d-flex justify-content-center mt-3">
                       <Link
-                        to="/post" // נתיב ללא ה-ID
+                        to="/post"
                         className="btn w-auto"
                         style={{ backgroundColor: "#FF9800", color: "white" }}
-                        onClick={() => handleViewDetails(post._id)} // קריאה לפונקציה בעת לחיצה
+                        onClick={() => handleViewDetails(post._id)} 
                       >
                         View Details
                       </Link>
