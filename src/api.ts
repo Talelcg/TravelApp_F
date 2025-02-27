@@ -35,6 +35,10 @@ export const getUsernameById = (userId: string) => API.get(`/users/${userId}`);
 export const getAllPosts = () => API.get('/posts');
 export const getPostById = (postId: string) => API.get(`/posts/${postId}`);
 
+export const toggleLikePost = (postId: string) =>
+  API.post(`/posts/${postId}`);
+
+
 export const updatePost = (postId: string, data: FormData) =>
   
   API.put(`/posts/${postId}`, data, {
@@ -47,5 +51,11 @@ export const addPost = (data: FormData) => API.post('/posts', data, {
     "Content-Type": "multipart/form-data",
   },
 });
+// Add comment
+export const addComment = (data: { content: string; postId: string }) =>
+  API.post('/comments', data);
 
+// Get all comments for a specific post
+export const getCommentsByPost = (postId: string) =>
+  API.get(`/comments/${postId}`);
 

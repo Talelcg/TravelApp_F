@@ -1,8 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { Card, Dropdown } from "react-bootstrap";
-import { getPostById, getUsernameById, deletePost } from "../api";
+import { getPostById, getUsernameById, deletePost, toggleLikePost } from "../api";
 import { useNavigate } from "react-router-dom";
+import { FaHeart } from "react-icons/fa";
+import CommentsSection from "../models/CommentsSection"; 
 
 interface Post {
   _id: string;
@@ -58,7 +59,11 @@ const PostDetails = () => {
     if (!postId) return;
     navigate('/edit-post/');
   };
-
+const incrementCommentsCount = () => {
+  setPost((prevPost) => 
+    prevPost ? { ...prevPost, commentsCount: prevPost.commentsCount + 1 } : prevPost
+  );
+};
   const handleDelete = async () => {
     if (!postId) return;
     try {
@@ -80,6 +85,28 @@ const PostDetails = () => {
   const handlePrevImage = () => {
     if (post) {
       setImageIndex((prev) => (prev - 1 + post.images.length) % post.images.length);
+    }
+  };
+
+  const handleLikePost = async () => {
+    try {
+      if (!currentUserId) {
+        alert("Please log in to like posts.");
+        return;
+      }
+      if (postId) {
+        await toggleLikePost(postId); // Call API function to toggle like
+      } else {
+        console.error("Post ID is null");
+      }
+      setPost((prevPost) => ({
+        ...prevPost!,
+        likes: prevPost!.likes.includes(currentUserId)
+          ? prevPost!.likes.filter((id) => id !== currentUserId)
+          : [...prevPost!.likes, currentUserId],
+      }));
+    } catch (error) {
+      console.error("Error liking post:", error);
     }
   };
 
@@ -151,11 +178,30 @@ const PostDetails = () => {
 
           <div className="d-flex justify-content-between mt-3 text-muted" style={{ gap: "20px" }}>
             <span>⭐ {post.rating} / 5</span>
-            <span>❤️ {post.likes.length}</span>
+
+            {/* Like Button */}
+            <span
+              style={{ cursor: 'pointer', alignItems: "center", gap: "8px", display: "flex" }}
+              onClick={handleLikePost}
+            >
+              <FaHeart
+                style={{
+                  color: currentUserId && post.likes.includes(currentUserId) ? 'red' : 'gray', // Red if liked, gray if not
+                  fontSize: '1.5rem',
+                  transition: 'color 0.3s', // optional transition for smooth change
+                }}
+              />
+              {post.likes.length}
+            </span>
+
             <span>💬 {post.commentsCount}</span>
           </div>
         </Card.Body>
       </Card>
+
+      {/* הוספת רכיב התגובות */}
+      
+<CommentsSection postId={postId!} incrementCommentsCount={incrementCommentsCount} currentUserId={""} />
     </div>
   );
 };

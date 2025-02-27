@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, Dropdown } from "react-bootstrap";
-import { getAllPosts, getUsernameById, deletePost } from "../api"; // הוספתי את פונקציית ה-API למחיקת פוסט
-import { FaEllipsisV } from "react-icons/fa";
+import { getAllPosts, getUsernameById, deletePost, toggleLikePost } from "../api"; // added deletePost API function
+import { FaEllipsisV, FaHeart } from "react-icons/fa";
 
 interface Post {
   _id: string;
@@ -22,8 +22,8 @@ const Trips = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [usernames, setUsernames] = useState<Record<string, string>>({});
-  const [imageIndex, setImageIndex] = useState<Record<string, number>>({}); // שמירת אינדקס תמונה לכל פוסט
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null); // שמירת ה-ID של המשתמש הנוכחי
+  const [imageIndex, setImageIndex] = useState<Record<string, number>>({}); // store image index for each post
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null); // store current user's ID
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -37,14 +37,38 @@ const Trips = () => {
       }
     };
 
-    // קביעת המשתמש הנוכחי
+    // Set current user
     const storedUserId = localStorage.getItem("user");
     setCurrentUserId(storedUserId ? storedUserId.replace(/"/g, '') : null);
 
     fetchPosts();
   }, []);
 
-  // פונקציה לקבלת שם משתמש לפי userId
+  const handleLikePost = async (postId: string) => {
+    try {
+      if (!currentUserId) {
+        alert("Please log in to like posts.");
+        return;
+      }
+      await toggleLikePost(postId); // call API function to toggle like
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                likes: post.likes.includes(currentUserId)
+                  ? post.likes.filter((id) => id !== currentUserId)
+                  : [...post.likes, currentUserId],
+              }
+            : post
+        )
+      ); // update state after like/unlike
+    } catch (error) {
+      console.error("Error liking post:", error);
+    }
+  };
+
+  // Fetch username by userId
   const fetchUsername = async (userId: string) => {
     if (!usernames[userId]) {
       try {
@@ -62,7 +86,7 @@ const Trips = () => {
     }
   };
 
-  // שינוי אינדקס התמונה
+  // Change image index
   const handleNextImage = (postId: string, imagesLength: number) => {
     setImageIndex((prev) => ({
       ...prev,
@@ -77,25 +101,23 @@ const Trips = () => {
     }));
   };
 
-  // פונקציה לשמירת ה-ID של הפוסט ב-localStorage
-  const handleViewDetails = (postId: string) => {
-    localStorage.setItem("selectedPostId", postId); // שמירת ה-ID ב-localStorage
-  };
+  // Save post ID to localStorage
 
-  // פונקציה לעריכה ומחיקה של הפוסט
+  // Handle post edit
   const handleEdit = (postId: string) => {
-    // Save post ID to localStorage
+    localStorage.setItem("selectedPostId", postId); // Save post ID to localStorage
+    navigate("/edit-post"); // Navigate to edit page
+  };
+  const handleViewDetails = (postId: string) => {
     localStorage.setItem("selectedPostId", postId);
-    navigate("/edit-post"); // Navigate to the upload post page for editing
+    navigate("/post"); 
   };
   
-
-  // פונקציה למחיקת הפוסט
+  // Handle post delete
   const handleDelete = async (postId: string) => {
     try {
-      // קריאה לפונקציית המחיקה
-      await deletePost(postId); // קריאה לפונקציה שמבצעת את המחיקה ב-API
-      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId)); // עדכון המצב (state) כדי להוריד את הפוסט מהתצוגה
+      await deletePost(postId); // Call deletePost API function
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId)); // Update state to remove deleted post
       console.log(`Post ${postId} deleted successfully`);
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -115,10 +137,10 @@ const Trips = () => {
           ) : (
             posts.map((post) => {
               if (!usernames[post.userId]) {
-                fetchUsername(post.userId); // קריאה לפונקציה כאשר אין עדיין שם משתמש
+                fetchUsername(post.userId); // Fetch username if not already in state
               }
 
-              // הגדרת אינדקס ברירת מחדל אם לא קיים
+              // Set default image index if not already set
               if (!(post._id in imageIndex)) {
                 setImageIndex((prev) => ({ ...prev, [post._id]: 0 }));
               }
@@ -150,7 +172,7 @@ const Trips = () => {
                           size="sm"
                           style={{ backgroundColor: "#FF9800", borderColor: "#FF9800" }}
                         >
-                          <FaEllipsisV style={{ color: "white" }} /> {/* אייקון של שלוש נקודות */}
+                          <FaEllipsisV style={{ color: "white" }} /> {/* Three dots icon */}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Item onClick={() => handleEdit(post._id)}>Edit</Dropdown.Item>
@@ -211,8 +233,29 @@ const Trips = () => {
 
                     <div className="d-flex justify-content-between mt-3 text-muted" style={{ gap: "20px" }}>
                       <span>⭐ {post.rating} / 5</span>
-                      <span>❤️ {post.likes.length}</span>
-                      <span>💬 {post.commentsCount}</span>
+
+                      <span
+                        style={{ cursor: 'pointer' ,alignItems: "center", gap: "8px", display: "flex" }}
+                        onClick={() => handleLikePost(post._id)} // Like post on click
+                      >
+                        <FaHeart
+                          style={{
+                            color: currentUserId && post.likes.includes(currentUserId) ? 'red' : 'gray', // Red if liked, gray if not
+                            fontSize: '1.5rem',
+                            
+                            transition: 'color 0.3s', // optional transition for smooth change
+                          }}
+                        />
+                        {post.likes.length}
+                      </span>
+
+                      <span
+  style={{ cursor: "pointer" }}
+  onClick={() => handleViewDetails(post._id)} // Navigate to post details on click
+>
+  💬 {post.commentsCount}
+</span>
+
                     </div>
 
                     <div className="d-flex justify-content-center mt-3">
@@ -220,7 +263,7 @@ const Trips = () => {
                         to="/post"
                         className="btn w-auto"
                         style={{ backgroundColor: "#FF9800", color: "white" }}
-                        onClick={() => handleViewDetails(post._id)} 
+                        onClick={() => handleViewDetails(post._id)}
                       >
                         View Details
                       </Link>

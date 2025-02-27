@@ -48,33 +48,42 @@ const EditPost: React.FC = () => {
     }
   }, [postId]);
 
+  // Helper function to check if a string is empty or contains only spaces
+  const isEmptyOrWhitespace = (str: string) => !str.trim();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate that the fields are not empty or contain only spaces
+    if (isEmptyOrWhitespace(title) || isEmptyOrWhitespace(content) || isEmptyOrWhitespace(location)) {
+      alert("Please fill in all fields and ensure they are not just spaces.");
+      return;
+    }
 
     if (rating === 0) {
       alert("Please rate your experience before submitting.");
       return;
     }
 
-
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
     formData.append("location", location);
     formData.append("rating", rating.toString());
-    //formData.append("images", JSON.stringify(images));
     images.forEach(image => formData.append("images", image));
+
     try {
       if (postId) {
         console.log("FormData values:");
-  for (let pair of formData.entries()) {
-    console.log(pair[0], pair[1]);
-  }console.log("Title:", title);
-  console.log("Content:", content);
-  console.log("Location:", location);
-  console.log("Rating:", rating);
-  console.log("Images:", images);
-  
+        for (let pair of formData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+        console.log("Title:", title);
+        console.log("Content:", content);
+        console.log("Location:", location);
+        console.log("Rating:", rating);
+        console.log("Images:", images);
+
         const response = await updatePost(postId, formData);
         console.log('Response data:', response.data);
         if (response.status === 200) {
