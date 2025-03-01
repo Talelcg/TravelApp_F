@@ -59,3 +59,5 @@ export const addComment = (data: { content: string; postId: string }) =>
 export const getCommentsByPost = (postId: string) =>
   API.get(`/comments/${postId}`);
 
+export const planTrip = (data: { destination: string; duration: number; interests: string }) =>
+  API.post('/api/plan-trip', data);
