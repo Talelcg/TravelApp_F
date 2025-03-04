@@ -73,12 +73,31 @@ const UploadPost: React.FC = () => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
+  const validateForm = () => {
+    // Trim values to remove any leading/trailing spaces
+    const trimmedTitle = title.trim();
+    const trimmedContent = content.trim();
+    const trimmedLocation = location.trim();
+
+    // Check if any required field is empty or contains only spaces
+    if (!trimmedTitle || !trimmedContent || !trimmedLocation) {
+      alert("All fields must be filled out properly. Please remove any empty spaces.");
+      return false;
+    }
+
     if (rating === 0) {
       alert("Please rate your experience before submitting.");
-      return;
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return; // Exit if form validation fails
     }
   
     const formData = new FormData();
@@ -214,13 +233,12 @@ const UploadPost: React.FC = () => {
             </div>
           </div>
           <button 
-  type="submit" 
-  className="btn w-100" 
-  style={{ backgroundColor: "#FF9800", color: "white" }}
->
-  Submit Post
-</button>
-
+            type="submit" 
+            className="btn w-100" 
+            style={{ backgroundColor: "#FF9800", color: "white" }}
+          >
+            Submit Post
+          </button>
         </form>
 
         {uploadSuccess && (
@@ -232,6 +250,5 @@ const UploadPost: React.FC = () => {
     </div>
   );
 };
-
 
 export default UploadPost;

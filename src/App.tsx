@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Auth from './pages/auth';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -6,6 +7,9 @@ import Trips from './pages/trips';
 import UploadPost from './pages/UploadPost';
 import UserProfile from './pages/UserProfile';
 import PlannerApi from './pages/PlannerApi';
+import PostDetails from './pages/PostDetails';
+import EditPost from './pages/EditPost';
+
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const token = localStorage.getItem('token');
@@ -25,6 +29,9 @@ function App() {
           <Route path="upload-post" element={<UploadPost />} />
           <Route path="user-profile" element={<UserProfile />} />
           <Route path="trip-planner" element={<PlannerApi />} />
+          <Route path="/post/" element={<PostDetails />} /> 
+          <Route path="/edit-post/" element={<EditPost />} /> 
+    
         </Route>
       </Routes>
     </Router>
