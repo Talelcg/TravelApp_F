@@ -61,3 +61,6 @@ export const getCommentsByPost = (postId: string) =>
 
 export const planTrip = (data: { destination: string; duration: number; interests: string }) =>
   API.post('/api/plan-trip', data);
+
+export const getPostsByUserId = (userId: string) => API.get(`/posts/user/${userId}`); 
+export const getUserById = (userId: string) => API.get(`/user/${userId}`);
