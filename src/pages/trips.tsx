@@ -29,7 +29,11 @@ const Trips = () => {
     const fetchPosts = async () => {
       try {
         const response = await getAllPosts();
-        setPosts(response.data as Post[]);
+        const sortedPosts = (response.data as Post[]).sort((a: Post, b: Post) => {
+          // מיון לפי תאריך יצירה מהחדש לישן
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        setPosts(sortedPosts); // עדכון רשימת הפוסטים הממוינת
       } catch (error) {
         console.error("Error fetching posts:", error);
       } finally {
@@ -101,18 +105,17 @@ const Trips = () => {
     }));
   };
 
-  // Save post ID to localStorage
-
   // Handle post edit
   const handleEdit = (postId: string) => {
     localStorage.setItem("selectedPostId", postId); // Save post ID to localStorage
     navigate("/edit-post"); // Navigate to edit page
   };
+
   const handleViewDetails = (postId: string) => {
     localStorage.setItem("selectedPostId", postId);
     navigate("/post"); 
   };
-  
+
   // Handle post delete
   const handleDelete = async (postId: string) => {
     try {
@@ -250,11 +253,11 @@ const Trips = () => {
                       </span>
 
                       <span
-  style={{ cursor: "pointer" }}
-  onClick={() => handleViewDetails(post._id)} // Navigate to post details on click
->
-  💬 {post.commentsCount}
-</span>
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleViewDetails(post._id)} // Navigate to post details on click
+                      >
+                        💬 {post.commentsCount}
+                      </span>
 
                     </div>
 
