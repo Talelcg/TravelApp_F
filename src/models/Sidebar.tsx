@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getUsernameById } from '../api';
+import { getUserById } from '../api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/Sidebar.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,6 +9,8 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userName, setUserName] = useState<string>('Guest');
+  const [profileImage, setProfileImage] = useState<string>("");
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -26,11 +28,17 @@ const Sidebar = () => {
 
   const fetchUser = async (userId: string) => {
     try {
-      const response = await getUsernameById(userId);
+      const response = await getUserById(userId);
       setUserName((response.data as { username: string }).username);
+      if (response.data.profileImage) {
+        setProfileImage(`${response.data.profileImage}`);
+      } else {
+        setProfileImage("https://www.w3schools.com/w3images/avatar2.png"); // Default profile picture
+      }
     } catch (error) {
       console.error('Error fetching username:', error);
       setUserName('Guest');
+      setProfileImage("https://www.w3schools.com/w3images/avatar2.png");
     }
   };
 
@@ -48,8 +56,8 @@ const Sidebar = () => {
       </div>
 
       <div className="user-profile">
-        {/* תמונת פרופיל עיגולית */}
-        <img src="https://www.w3schools.com/w3images/avatar2.png" alt="Profile" className="profile-image" />
+        {/* User Profile Picture */}
+        <img src={profileImage} alt="Profile" className="profile-image" />
         <span>{userName}</span>
       </div>
 
