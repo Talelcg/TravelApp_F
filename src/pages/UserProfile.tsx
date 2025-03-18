@@ -167,8 +167,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserById, getPostsByUserId, uploadProfilePicture, updateBio } from "../api";
-import { Card, Form, Badge } from "react-bootstrap";
+import { Card, Form, Badge,Dropdown } from "react-bootstrap";
+import { FaEllipsisV } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
+import { deletePost } from "../api";
 
 interface Post {
   _id: string;
@@ -189,6 +191,25 @@ const Profile = () => {
   const [newBio, setNewBio] = useState<string>("");
   const navigate = useNavigate();
 
+  
+  
+  // Handle post edit
+  const handleEdit = (postId: string) => {
+    localStorage.setItem("selectedPostId", postId); // Save post ID to localStorage
+    navigate("/edit-post"); // Navigate to edit page
+  };
+  
+  // Handle post delete
+  const handleDelete = async (postId: string) => {
+    try {
+      await deletePost(postId); // Call deletePost API function
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId)); // Update state to remove deleted post
+      console.log(`Post ${postId} deleted successfully`);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+  
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -365,12 +386,45 @@ const Profile = () => {
               }}
             />
             <Card.Body>
+              
               <Card.Title style={{ fontWeight: "bold", fontSize: "1.3rem" }}>{post.title}</Card.Title>
               <Card.Text style={{ color: "#444" }}>{post.content}</Card.Text>
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
                 <Badge bg="success">{post.likes.length} Likes</Badge>
                 <Badge bg="info">{post.commentsCount} Comments</Badge>
               </div>
+              <div className="d-flex justify-content-between align-items-center">
+
+              {/* Three Dots Menu (Edit/Delete) Positioned at Top-Right */}
+              <Dropdown align="end">
+                <Dropdown.Toggle
+                  variant="light"
+                  size="sm"
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    padding: "0px",
+                  }}
+                >
+                  <FaEllipsisV
+                    style={{
+                      color: "#FF9800", // Orange color
+                      fontSize: "1.5rem", // Bigger size for better visibility
+                      cursor: "pointer",
+                    }}
+                  />
+                </Dropdown.Toggle>
+                <Dropdown.Menu style={{ borderRadius: "8px", border: "none", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
+                  <Dropdown.Item onClick={() => handleEdit(post._id)} style={{ color: "#FF9800", fontWeight: "bold" }}>
+                    ✏️ Edit
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleDelete(post._id)} style={{ color: "red", fontWeight: "bold" }}>
+                    🗑️ Delete
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
+
             </Card.Body>
           </Card>
         )) : <p style={{ textAlign: "center", fontSize: "1.2rem", color: "#777" }}>No posts found.</p>}
