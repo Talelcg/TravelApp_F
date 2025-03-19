@@ -63,4 +63,38 @@ export const planTrip = (data: { destination: string; duration: number; interest
   API.post('/api/plan-trip', data);
 
 export const getPostsByUserId = (userId: string) => API.get(`/posts/user/${userId}`); 
-export const getUserById = (userId: string) => API.get(`/user/${userId}`);
+// export const getUserById = (userId: string) => API.get(`/user/${userId}`);
+
+
+
+interface UserResponse {
+  username: string;
+  bio: string;
+  profileImage: string;
+}
+
+export const getUserById = async (userId: string) => {
+  return axios.get<UserResponse>(`http://localhost:3000/users/${userId}`);
+};
+
+export const uploadProfilePicture = async (userId: string, file: File) => {
+  const formData = new FormData();
+  formData.append("profilePicture", file);
+
+  const response = await fetch(`http://localhost:3000/users/upload-profile-picture/${userId}`, {
+    method: "POST",
+    body: formData,
+  });
+
+  return response.json();
+  console.log(response.json);
+};
+
+
+export const getUserBioById = async (userId: string) => {
+  return axios.get<UserResponse>(`http://localhost:3000/users/${userId}`);
+};
+
+export const updateBio = async (userId: string, bio: string) => {
+  return axios.post(`http://localhost:3000/users/update-bio/${userId}`, { bio });
+};

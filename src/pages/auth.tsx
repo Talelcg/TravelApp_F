@@ -24,12 +24,17 @@ const Auth = () => {
     try {
       if (isRegister) {
         // Register new user
+        console.log("biiiiii")
+
         await register({ email, username, password });
         alert('Account created! Please log in.');
         setIsRegister(false);  // Switch to login after successful registration
       } else {
         // Login existing user
+        console.log("biiiiii")
+
         const res = await login({ email, password });
+        console.log("hiiiiii")
 
         // ✅ Store token and user info in localStorage
         const data = res.data as { accessToken: string; _id: string };
