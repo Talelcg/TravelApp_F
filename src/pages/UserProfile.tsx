@@ -308,7 +308,7 @@ const Profile = () => {
           }}>
             <img
               src={`${profileImage}`}
-              alt="Profile"
+            
               style={{
                 width: "100%",
                 height: "100%",
@@ -344,26 +344,26 @@ const Profile = () => {
 
         <h1 style={{ fontWeight: "bold", fontSize: "1.8rem" }}>{userName ? `${userName}'s Profile` : "Loading..."}</h1>
 
-        {/* Editable Bio */}
-        {isEditingBio ? (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "10px" }}>
-            <Form.Control
-              type="text"
-              value={newBio}
-              onChange={(e) => setNewBio(e.target.value)}
-              style={{ maxWidth: "400px" }}
-            />
-            <button className="btn btn-warning" onClick={handleBioUpdate}>Save</button>
-          </div>
-        ) : (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "5px", cursor: "pointer" }}>
-            <p style={{ fontSize: "1.1rem", fontStyle: "italic", color: "#666" }} onClick={() => setIsEditingBio(true)}>
-              {bio}
-            </p>
-            <PencilSquare size={20} color="#ff9800" onClick={() => setIsEditingBio(true)} />
-          </div>
-        )}
-      </div>
+{/* Editable Bio */}
+{isEditingBio ? (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "15px" }}>
+    <Form.Control
+      type="text"
+      value={newBio}
+      onChange={(e) => setNewBio(e.target.value)}
+      style={{ maxWidth: "400px" }}
+    />
+    <button className="btn btn-warning" onClick={handleBioUpdate}>Save</button>
+  </div>
+) : (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "2px", cursor: "pointer", width: "100%" }}>
+    <p style={{ fontSize: "1.1rem", fontStyle: "italic", color: "#666", textAlign: "center", flexGrow: 1 }} onClick={() => setIsEditingBio(true)}>
+      {bio}
+    </p>
+    <PencilSquare size={20} color="#ff9800" onClick={() => setIsEditingBio(true)} />
+  </div>
+)}
+</div>
 
       {/* Posts Section */}
       <h2 style={{ textAlign: "center", marginBottom: "15px" }}>My Posts</h2>
