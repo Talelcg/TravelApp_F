@@ -206,9 +206,9 @@ const Profile = () => {
                 <p className="text-center">{post.content}</p>
                 <div className="d-flex justify-content-between mt-3 text-muted" style={{ gap: "20px" }}>
                 <span>⭐ {post.rating ?? 0} / 5</span>
-+               <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>❤️ post.likes.length</span>
-                  <span>💬 {post.commentsCount || 0}</span>
-                </div>
+                <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>❤️ {post.likes.length}</span>
+                <span style={{ cursor: "pointer" }} onClick={() => { localStorage.setItem("selectedPostId", post._id); navigate("/post"); }}>💬 {post.commentsCount || 0}</span> 
+               </div>
                 <div className="d-flex justify-content-center mt-3">
                   <Link to="/post" className="btn w-auto" style={{ backgroundColor: "#FF9800", color: "white" }} onClick={() => { localStorage.setItem("selectedPostId", post._id); navigate("/post"); }}>View Details</Link>
                 </div>
