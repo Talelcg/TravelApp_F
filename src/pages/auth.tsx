@@ -3,6 +3,8 @@ import { login, register } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { Container, Form, Button, Card, Row, Col } from 'react-bootstrap';
 import '../styles/Auth.css';
+import { GoogleLogin } from '@react-oauth/google';
+import '../styles/Auth.css';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -11,38 +13,23 @@ const Auth = () => {
   const [isRegister, setIsRegister] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Check if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      navigate('/trips');
-    }
+    if (token) navigate('/trips');
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (isRegister) {
-        // Register new user
-        console.log("biiiiii")
-
         await register({ email, username, password });
         alert('Account created! Please log in.');
-        setIsRegister(false);  // Switch to login after successful registration
+        setIsRegister(false);
       } else {
-        // Login existing user
-        console.log("biiiiii")
-
         const res = await login({ email, password });
-        console.log("hiiiiii")
-
-        // ✅ Store token and user info in localStorage
         const data = res.data as { accessToken: string; _id: string };
         localStorage.setItem('token', data.accessToken);
-        localStorage.setItem('user', JSON.stringify(data._id))
-    
-        console.log('Response data:', res.data);
-
+        localStorage.setItem('user', JSON.stringify(data._id));
         navigate('/trips');
       }
     } catch (error) {
@@ -51,73 +38,98 @@ const Auth = () => {
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100">
-      <Card className="auth-card">
-        <Card.Body>
-          <h2 className="text-center">{isRegister ? 'Sign Up' : 'Log In'}</h2>
-          <Form onSubmit={handleSubmit}>
-            {isRegister && (
-              <Form.Group className="mb-3">
-                <Form.Label>Username</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
-              </Form.Group>
+    <div className="auth-full-background">
+      <div className="auth-glass-card">
+        <h2 className="text-center mb-4">{isRegister ? 'Sign Up' : 'Log In'}</h2>
+
+        <Form onSubmit={handleSubmit}>
+          {isRegister && (
+            <Form.Group className="mb-3">
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </Form.Group>
+          )}
+
+          <Form.Group className="mb-3">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-4">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </Form.Group>
+
+          <Button variant="warning" type="submit" className="w-100">
+            {isRegister ? 'Create Account' : 'Log In'}
+          </Button>
+        </Form>
+
+        <Row className="mt-3">
+          <Col className="text-center">
+            {isRegister ? (
+              <p>
+                Already have an account?{' '}
+                <span className="auth-toggle" onClick={() => setIsRegister(false)}>
+                  Log in
+                </span>
+              </p>
+            ) : (
+              <p>
+                Don’t have an account?{' '}
+                <span className="auth-toggle" onClick={() => setIsRegister(true)}>
+                  Sign up
+                </span>
+              </p>
             )}
+          </Col>
+        </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </Form.Group>
+        <div className="mt-4 w-100">
+        <div className="google-login-wrapper">
+           <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              const res = await fetch("http://localhost:3000/users/google", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: credentialResponse.credential }),
+              });
 
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </Form.Group>
+              const data = await res.json();
+              if (data.accessToken) {
+                localStorage.setItem("token", data.accessToken);
+                localStorage.setItem("user", JSON.stringify(data.user._id));
+                navigate("/trips");
+              } else {
+                alert("Google login failed");
+              }
+            }}
+            onError={() => alert("Google Sign-In Failed")}
+            width="100%"
 
-            <Button variant="primary" type="submit" className="w-100">
-              {isRegister ? 'Sign Up' : 'Log In'}
-            </Button>
-          </Form>
-
-          <Row className="mt-3">
-            <Col className="text-center">
-              {isRegister ? (
-                <p>
-                  Already have an account?{' '}
-                  <span className="auth-toggle" onClick={() => setIsRegister(false)}>
-                    Log in
-                  </span>
-                </p>
-              ) : (
-                <p>
-                  Don't have an account?{' '}
-                  <span className="auth-toggle" onClick={() => setIsRegister(true)}>
-                    Sign up
-                  </span>
-                </p>
-              )}
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-    </Container>
+          />
+        </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, Dropdown,Button } from "react-bootstrap";
+import { getUserById } from '../api';
+
 import { getAllPosts, getUsernameById, deletePost, toggleLikePost } from "../api"; // added deletePost API function
 import { FaEllipsisV, FaHeart } from "react-icons/fa";
 
@@ -18,6 +20,7 @@ interface Post {
 }
 
 const Trips = () => {
+  const [userDetails, setUserDetails] = useState<Record<string, { username: string; profileImage?: string }>>({});
   const [posts, setPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
@@ -78,22 +81,29 @@ const Trips = () => {
   };
 
   // Fetch username by userId
-  const fetchUsername = async (userId: string) => {
-    if (!usernames[userId]) {
+  const fetchUserDetails = async (userId: string) => {
+    if (!userDetails[userId]) {
       try {
-        const response = await getUsernameById(userId);
-        setUsernames((prev) => ({
+        const res = await getUserById(userId);
+        setUserDetails((prev) => ({
           ...prev,
-          [userId]: (response.data as { username: string }).username,
+          [userId]: {
+            username: res.data.username,
+            profileImage: res.data.profileImage || "/profile_pictures/default.png"
+          }
         }));
       } catch {
-        setUsernames((prev) => ({
+        setUserDetails((prev) => ({
           ...prev,
-          [userId]: "Unknown",
+          [userId]: {
+            username: "Unknown",
+            profileImage: "/profile_pictures/default.png"
+          }
         }));
       }
     }
   };
+  
 
   // Change image index
   const handleNextImage = (postId: string, imagesLength: number) => {
@@ -164,15 +174,16 @@ const Trips = () => {
         {posts.length === 0 ? (
           <p style={{ textAlign: "center" }}>No trips found</p>
         ) : (
-          filteredPosts.map((post) => {
-            if (!usernames[post.userId]) {
-              fetchUsername(post.userId); // Fetch username if not already in state
-            }
+            filteredPosts.map((post) => {
+              if (!usernames[post.userId]) {
+                fetchUserDetails(post.userId); // Fetch username if not already in state
+              }
 
             // Set default image index if not already set
             if (!(post._id in imageIndex)) {
               setImageIndex((prev) => ({ ...prev, [post._id]: 0 }));
             }
+
 
 
             return (
@@ -257,9 +268,15 @@ const Trips = () => {
                   <h5 className="text-center my-2">{post.title}</h5>
                   <p className="text-center">{post.content}</p>
 
-                  <div className="text-left">
-                    <span>👤 {usernames[post.userId] || "Loading..."}</span>
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <img
+                        src={userDetails[post.userId]?.profileImage || "/profile_pictures/default.png"}
+                        alt="User"
+                        style={{ width: "32px", height: "32px", borderRadius: "50%" }}
+                      />
+                      <span>{userDetails[post.userId]?.username || "Loading..."}</span>
                   </div>
+
 
                   <div className="d-flex justify-content-between mt-3 text-muted" style={{ gap: "20px" }}>
                     <span>⭐ {post.rating} / 5</span>
