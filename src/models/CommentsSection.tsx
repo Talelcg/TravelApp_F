@@ -34,7 +34,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId, incrementComm
           ...prev,
           [userId]: {
             username: res.data.username,
-            profileImage: res.data.profileImage || "/profile_pictures/default.png"
+            profileImage: res.data.profileImage
           }
         }));
       } catch {
@@ -101,7 +101,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId, incrementComm
           {comments.map((comment) => (
             <ListGroup.Item key={comment._id} className="d-flex align-items-center gap-2">
               <img
-                src={userDetails[comment.userId]?.profileImage || "/profile_pictures/default.png"}
+                src={userDetails[comment.userId]?.profileImage}
                 alt="User"
                 style={{ width: "30px", height: "30px", borderRadius: "50%" }}
               />
