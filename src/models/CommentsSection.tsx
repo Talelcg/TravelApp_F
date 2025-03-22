@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { addComment, getCommentsByPost, getUsernameById } from '../api'; 
+import { addComment, getCommentsByPost, getUserById } from '../api';
 import { Button, Form, ListGroup, Spinner } from 'react-bootstrap';
 
 interface Comment {
@@ -11,20 +11,43 @@ interface Comment {
 
 interface CommentsSectionProps {
   postId: string;
-  currentUserId: string; 
-  incrementCommentsCount: () => void; // פונקציה להגדלת כמות התגובות
+  currentUserId: string;
+  incrementCommentsCount: () => void;
 }
 
 const CommentsSection: React.FC<CommentsSectionProps> = ({ postId, incrementCommentsCount }) => {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [userDetails, setUserDetails] = useState<{ [key: string]: { username: string; profileImage: string } }>({});
   const [newComment, setNewComment] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
-  const [usernames, setUsernames] = useState<{ [key: string]: string }>({}); 
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
     fetchComments();
   }, [postId]);
+
+  const fetchUserDetails = async (userId: string) => {
+    if (!userDetails[userId]) {
+      try {
+        const res = await getUserById(userId);
+        setUserDetails((prev) => ({
+          ...prev,
+          [userId]: {
+            username: res.data.username,
+            profileImage: res.data.profileImage || "/profile_pictures/default.png"
+          }
+        }));
+      } catch {
+        setUserDetails((prev) => ({
+          ...prev,
+          [userId]: {
+            username: "Unknown",
+            profileImage: "/profile_pictures/default.png"
+          }
+        }));
+      }
+    }
+  };
 
   const fetchComments = async () => {
     try {
@@ -33,20 +56,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId, incrementComm
       const commentsData = response.data as Comment[];
       setComments(commentsData);
 
-      // השגת שמות משתמשים לכל התגובות
-      const uniqueUserIds = [...new Set(commentsData.map(comment => comment.userId))];
-      const usernamesMap: { [key: string]: string } = {};
-
-      await Promise.all(uniqueUserIds.map(async (userId) => {
-        try {
-          const res = await getUsernameById(userId);
-          usernamesMap[userId] = (res.data as { username: string }).username;
-        } catch {
-          usernamesMap[userId] = 'Unknown';
-        }
-      }));
-
-      setUsernames(usernamesMap);
+      const uniqueUserIds = [...new Set(commentsData.map((comment) => comment.userId))];
+      await Promise.all(uniqueUserIds.map((userId) => fetchUserDetails(userId)));
     } catch (error) {
       console.error('Error fetching comments:', error);
     } finally {
@@ -71,7 +82,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId, incrementComm
 
       setNewComment('');
       fetchComments();
-      incrementCommentsCount(); // הגדלת מונה התגובות בתצוגה
+      incrementCommentsCount();
     } catch (error) {
       console.error('Error adding comment:', error);
     } finally {
@@ -88,8 +99,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId, incrementComm
       ) : (
         <ListGroup style={{ maxWidth: '600px', wordWrap: 'break-word' }}>
           {comments.map((comment) => (
-            <ListGroup.Item key={comment._id}>
-              <strong>{usernames[comment.userId] || 'Unknown'}:</strong> {comment.content}
+            <ListGroup.Item key={comment._id} className="d-flex align-items-center gap-2">
+              <img
+                src={userDetails[comment.userId]?.profileImage || "/profile_pictures/default.png"}
+                alt="User"
+                style={{ width: "30px", height: "30px", borderRadius: "50%" }}
+              />
+              <div>
+                <strong>{userDetails[comment.userId]?.username || "Unknown"}:</strong> {comment.content}
+              </div>
             </ListGroup.Item>
           ))}
         </ListGroup>
@@ -108,7 +126,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId, incrementComm
             disabled={submitting}
           />
         </Form.Group>
-        <Button  variant="primary" type="submit" className="mt-2" disabled={submitting}>
+        <Button variant="primary" type="submit" className="mt-2" disabled={submitting}>
           {submitting ? 'Adding comment...' : 'Add comment'}
         </Button>
       </Form>
