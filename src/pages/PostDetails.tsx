@@ -24,6 +24,7 @@ const PostDetails = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [username, setUsername] = useState<string>("");
   const [imageIndex, setImageIndex] = useState<number>(0);
+  const [profileImage, setProfileImage] = useState<string>("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -39,8 +40,9 @@ const PostDetails = () => {
         const postData = response.data as Post;
         setPost(postData);
         const usernameResponse = await getUsernameById(postData.userId);
-        const fetchedUsername = (usernameResponse.data as { username: string }).username;
-        setUsername(fetchedUsername);
+        const fetchedProfileImage = (usernameResponse.data as { profileImage: string }).profileImage;
+        setProfileImage(fetchedProfileImage);
+        setUsername((usernameResponse.data as { username: string }).username);
 
         // Get current user ID from localStorage
         const storedUserId = localStorage.getItem("user");
@@ -173,9 +175,13 @@ const incrementCommentsCount = () => {
           <h5 className="text-center my-2">{post.title}</h5>
           <p className="text-center">{post.content}</p>
           <div className="text-left">
-            <span>👤 {username}</span>
+            <span><img
+                      src={profileImage || "/profile_pictures/default.png"}
+                      alt="User"
+                      style={{ width: "32px", height: "32px", borderRadius: "50%" }}
+                      /> <span></span> {   username}</span>
           </div>
-
+          
           <div className="d-flex justify-content-between mt-3 text-muted" style={{ gap: "20px" }}>
             <span>⭐ {post.rating} / 5</span>
 
