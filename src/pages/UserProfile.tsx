@@ -14,6 +14,8 @@ interface Post {
   images: string[];
   likes: string[];
   commentsCount: number;
+  rating?: number;
+
 }
 
 const Profile = () => {
@@ -203,7 +205,8 @@ const Profile = () => {
                 <h5 className="text-center my-2">{post.title}</h5>
                 <p className="text-center">{post.content}</p>
                 <div className="d-flex justify-content-between mt-3 text-muted" style={{ gap: "20px" }}>
-                  <span>⭐ {post.likes.length} Likes</span>
+                <span>⭐ {post.rating ?? 0} / 5</span>
++               <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>❤️ post.likes.length</span>
                   <span>💬 {post.commentsCount || 0}</span>
                 </div>
                 <div className="d-flex justify-content-center mt-3">
