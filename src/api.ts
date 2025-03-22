@@ -70,6 +70,7 @@ export const getPostsByUserId = (userId: string) => API.get(`/posts/user/${userI
 interface UserResponse {
   username: string;
   bio: string;
+  email: string;
   profileImage: string;
 }
 
@@ -97,4 +98,8 @@ export const getUserBioById = async (userId: string) => {
 
 export const updateBio = async (userId: string, bio: string) => {
   return axios.post(`http://localhost:3000/users/update-bio/${userId}`, { bio });
+};
+
+export const updateUsername = async (userId: string, username: string) => {
+  return axios.post(`http://localhost:3000/users/update-username/${userId}`, { username });
 };
