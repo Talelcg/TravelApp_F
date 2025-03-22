@@ -74,18 +74,7 @@ const EditPost: React.FC = () => {
 
     try {
       if (postId) {
-        console.log("FormData values:");
-        for (let pair of formData.entries()) {
-          console.log(pair[0], pair[1]);
-        }
-        console.log("Title:", title);
-        console.log("Content:", content);
-        console.log("Location:", location);
-        console.log("Rating:", rating);
-        console.log("Images:", images);
-
         const response = await updatePost(postId, formData);
-        console.log('Response data:', response.data);
         if (response.status === 200) {
           setTimeout(() => {
             navigate("/trips");

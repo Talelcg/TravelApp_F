@@ -88,7 +88,6 @@ export const uploadProfilePicture = async (userId: string, file: File) => {
   });
 
   return response.json();
-  console.log(response.json);
 };
 
 

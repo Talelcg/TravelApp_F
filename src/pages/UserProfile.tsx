@@ -73,7 +73,7 @@ const Profile = () => {
         setNewUsername(userResponse.data.username);
         setEmail(userResponse.data.email);
         setBio(userResponse.data.bio);
-        setProfileImage(userResponse.data.profileImage || "/profile_pictures/default.png");
+        setProfileImage(userResponse.data.profileImage);
 
         const postsResponse = await getPostsByUserId(userId);
         const formattedPosts = (postsResponse.data as Post[]).map((post) => ({

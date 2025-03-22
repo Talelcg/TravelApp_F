@@ -89,7 +89,7 @@ const Trips = () => {
           ...prev,
           [userId]: {
             username: res.data.username,
-            profileImage: res.data.profileImage || "/profile_pictures/default.png"
+            profileImage: res.data.profileImage 
           }
         }));
       } catch {
@@ -270,7 +270,7 @@ const Trips = () => {
 
                     <div className="d-flex align-items-center gap-2 mb-2">
                       <img
-                        src={userDetails[post.userId]?.profileImage || "/profile_pictures/default.png"}
+                        src={userDetails[post.userId]?.profileImage}
                         alt="User"
                         style={{ width: "32px", height: "32px", borderRadius: "50%" }}
                       />
