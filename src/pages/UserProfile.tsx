@@ -165,12 +165,12 @@
 
 // export default Profile;
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { getUserById, getPostsByUserId, uploadProfilePicture, updateBio } from "../api";
 import { Card, Form, Badge,Dropdown } from "react-bootstrap";
 import { FaEllipsisV } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
 import { deletePost } from "../api";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Post {
   _id: string;
@@ -365,70 +365,86 @@ const Profile = () => {
         )}
       </div>
 
-      {/* Posts Section */}
-      <h2 style={{ textAlign: "center", marginBottom: "15px" }}>My Posts</h2>
-      <div className="posts-list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-        {posts.length > 0 ? posts.map((post) => (
-          <Card key={post._id} style={{
-            padding: "15px",
-            borderRadius: "12px",
-            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)",
-            backgroundColor: "#ffffff"
-          }}>
-            <Card.Img
-              variant="top"
-              src={post.images.length > 0 ? post.images[0] : "https://via.placeholder.com/300"}
-              style={{
-                borderRadius: "10px",
-                height: "180px",
-                objectFit: "cover",
-                backgroundColor: "#f0f0f0"
-              }}
-            />
-            <Card.Body>
-              
-              <Card.Title style={{ fontWeight: "bold", fontSize: "1.3rem" }}>{post.title}</Card.Title>
-              <Card.Text style={{ color: "#444" }}>{post.content}</Card.Text>
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-                <Badge bg="success">{post.likes.length} Likes</Badge>
-                <Badge bg="info">{post.commentsCount} Comments</Badge>
-              </div>
-              <div className="d-flex justify-content-between align-items-center">
+   {/* Posts Section */}
+<h2 style={{ textAlign: "center", marginBottom: "15px" }}>My Posts</h2>
+<div className="posts-list">
+  {posts.length > 0 ? (
+    posts.map((post) => (
+      <Card
+        key={post._id}
+        className="shadow-sm border-0 rounded-lg overflow-hidden mt-5 p-3"
+        style={{ maxWidth: "600px", margin: "0 auto" }}
+      >
+        <div
+          className="d-flex justify-content-between align-items-center text-muted"
+          style={{ fontSize: "0.9rem", marginBottom: "10px" }}
+        >
+          <span>
+            {new Date(post.createdAt).toLocaleString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+          <Dropdown>
+            <Dropdown.Toggle
+              variant="secondary"
+              size="sm"
+              style={{ backgroundColor: "#FF9800", borderColor: "#FF9800" }}
+            >
+              <FaEllipsisV style={{ color: "white" }} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => handleEdit(post._id)}>Edit</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDelete(post._id)}>Delete</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </div>
 
-              {/* Three Dots Menu (Edit/Delete) Positioned at Top-Right */}
-              <Dropdown align="end">
-                <Dropdown.Toggle
-                  variant="light"
-                  size="sm"
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    padding: "0px",
-                  }}
-                >
-                  <FaEllipsisV
-                    style={{
-                      color: "#FF9800", // Orange color
-                      fontSize: "1.5rem", // Bigger size for better visibility
-                      cursor: "pointer",
-                    }}
-                  />
-                </Dropdown.Toggle>
-                <Dropdown.Menu style={{ borderRadius: "8px", border: "none", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
-                  <Dropdown.Item onClick={() => handleEdit(post._id)} style={{ color: "#FF9800", fontWeight: "bold" }}>
-                    ✏️ Edit
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleDelete(post._id)} style={{ color: "red", fontWeight: "bold" }}>
-                    🗑️ Delete
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+        <div className="position-relative w-100 text-center">
+          {post.images.length > 0 && (
+            <div className="position-relative">
+              <img
+                src={post.images[0]}
+                alt="Post"
+                className="img-fluid rounded"
+                style={{ width: "60%", height: "auto" }}
+              />
             </div>
+          )}
+        </div>
 
-            </Card.Body>
-          </Card>
-        )) : <p style={{ textAlign: "center", fontSize: "1.2rem", color: "#777" }}>No posts found.</p>}
-      </div>
+        <Card.Body>
+          <h5 className="text-center my-2">{post.title}</h5>
+          <p className="text-center">{post.content}</p>
+
+          <div className="d-flex justify-content-between mt-3 text-muted" style={{ gap: "20px" }}>
+            <span>⭐ {post.likes.length} Likes</span>
+            <span>💬 {post.commentsCount || 0}</span>
+          </div>
+
+          <div className="d-flex justify-content-center mt-3">
+            <Link
+              to="/post"
+              className="btn w-auto"
+              style={{ backgroundColor: "#FF9800", color: "white" }}
+              onClick={() => {
+                localStorage.setItem("selectedPostId", post._id);
+                navigate("/post");
+              }}
+            >
+              View Details
+            </Link>
+          </div>
+        </Card.Body>
+      </Card>
+    ))
+  ) : (
+    <p style={{ textAlign: "center", fontSize: "1.2rem", color: "#777" }}>No posts found.</p>
+  )}
+</div>
     </div>
   );
 };
